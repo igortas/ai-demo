@@ -1,0 +1,11 @@
+{
+  "name": "ai-demo",
+  "version": "1.0.0",
+  "description": "Demo app showing AI agent integration with GitHub Actions",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["ai", "demo", "github-actions"],
+  "license": "MIT"
+}
