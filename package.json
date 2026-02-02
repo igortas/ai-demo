@@ -4,7 +4,8 @@
   "description": "Demo app showing AI agent integration with GitHub Actions",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node index.test.js"
   },
   "keywords": ["ai", "demo", "github-actions"],
   "license": "MIT"
