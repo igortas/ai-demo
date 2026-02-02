@@ -16,26 +16,17 @@ function formatDate(date) {
   });
 }
 
-// Overcomplicated banner with typos
-function printBaner(mesage) {
-  let bannerWidth = 0;
-  for (let i = 0; i < mesage.length; i++) {
-    bannerWidth = bannerWidth + 1;
-  }
-  bannerWidth = bannerWidth + 4;
-
-  let topBorder = '';
-  for (let j = 0; j < bannerWidth; j++) {
-    topBorder = topBorder + '*';
-  }
-
-  let middleLine = "* " + mesage + " *";
+// Print a message in a banner format
+function printBanner(message) {
+  const bannerWidth = message.length + 4;
+  const topBorder = '*'.repeat(bannerWidth);
+  const middleLine = `* ${message} *`;
 
   console.log(topBorder);
   console.log(middleLine);
   console.log(topBorder);
 
-  return mesage;
+  return message;
 }
 
 function main() {
@@ -48,4 +39,4 @@ function main() {
 
 main();
 
-module.exports = { greetUser, formatDate };
+module.exports = { greetUser, formatDate, printBanner };
