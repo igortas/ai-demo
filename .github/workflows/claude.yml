@@ -99,8 +99,10 @@ jobs:
           Instructions:
           1. Analyze the request carefully
           2. Execute the request - make necessary code changes
-          3. Commit your changes with a clear message
-          4. Provide a summary of what you did"
+          3. Add or update tests in index.test.js for any code changes
+          4. Run tests to verify they pass
+          5. Commit your changes with a clear message
+          6. Provide a summary of what you did"
 
           OUTPUT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1) || true
           {
