@@ -1,6 +1,6 @@
 # AI Demo Setup Guide
 
-A demo showing AI agents integrated into GitHub PR workflow. When someone comments `@claude fix this` on a PR, a GitHub Action triggers Claude to automatically fix the bug.
+A demo showing AI agents integrated into GitHub PR workflow. Claude can automatically fix bugs when triggered via PR comments or CLI.
 
 ---
 
@@ -15,19 +15,13 @@ A demo showing AI agents integrated into GitHub PR workflow. When someone commen
 
 ## Step 2: Push Code to GitHub
 
-Run these commands in the terminal:
-
 ```bash
-# Add your GitHub repo as remote (replace YOUR_USERNAME)
-git remote add origin https://github.com/YOUR_USERNAME/ai-demo.git
+# Set your GitHub repo as remote
+git remote set-url origin git@github.com:YOUR_USERNAME/ai-demo.git
 
 # Push main branch
 git checkout main
 git push -u origin main
-
-# Push bugfix or docs branch (contains the bug)
-git checkout -b bugfix/welcome-message
-git push -u origin bugfix/welcome-message
 ```
 
 ---
@@ -39,84 +33,113 @@ git push -u origin bugfix/welcome-message
 3. In left sidebar: **Secrets and variables** → **Actions**
 4. Click **New repository secret**
 5. Name: `ANTHROPIC_API_KEY`
-6. Value: Your Anthropic API key
+6. Value: Your Anthropic API key (get it from https://console.anthropic.com/settings/keys)
 7. Click **Add secret**
 
 ---
 
-## Step 4: Create Pull Request
+## Step 4: Create Feature Branch with Bug
 
-1. Go to your repo on GitHub: `https://github.com/YOUR_USERNAME/ai-demo`
-2. You should see a banner: **"bugfix/welcome-message had recent pushes"**
-3. Click **Compare & pull request**
-4. Title: `bugfix: Update greeting message`
+```bash
+# Create feature branch
+git checkout -b feature/welcome-message
+
+# Edit index.js to add typos (for demo)
+# Change "Hello" to "Helo" and "Welcome" to "Welcom"
+
+git add index.js
+git commit -m "feat: Add greeting message"
+git push -u origin feature/welcome-message
+```
+
+---
+
+## Step 5: Create Pull Request
+
+1. Go to: https://github.com/YOUR_USERNAME/ai-demo
+2. Click **Compare & pull request** (or go to Pull requests → New)
+3. Base: `main` ← Compare: `feature/welcome-message`
+4. Title: `feat: Add greeting message`
 5. Click **Create pull request**
 
 ---
 
-## Step 5: Demo the AI Agent
+## Step 6: Trigger Claude to Fix
 
-1. On the PR page, scroll to the comment box
-2. Type: `@claude fix this`
-3. Click **Comment**
-4. Watch the **Actions** tab - the workflow will run
-5. Claude will find the typos ("Helo" → "Hello", "Welcom" → "Welcome")
-6. Claude commits the fix automatically
-7. Check the PR - you'll see a new commit with the fix!
+### Option A: Comment on PR
+1. On the PR page, add a comment: `@claude fix this`
+2. The GitHub Action triggers automatically
 
----
-
-## What's in the Demo
-
-### The Bug (intentional)
-
-File: `index.js` on `bugfix/welcome-message` branch
-
-```javascript
-function greetUser(name) {
-	return `Helo, ${name}! Welcom to our app.`; // typos: "Helo", "Welcom"
-}
-```
-
-### The Fix (what Claude will do)
-
-```javascript
-function greetUser(name) {
-	return `Hello, ${name}! Welcome to our app.`; // fixed!
-}
+### Option B: CLI Command
+```bash
+gh workflow run claude-fix.yml -f pr_number=<PR_NUMBER>
 ```
 
 ---
 
-## Presentation Talking Points
+## What Happens
 
-- **Agent Autonomy**: Claude reads code, identifies bugs, fixes them, and commits
-- **CI/CD Integration**: AI agents fit seamlessly into DevOps workflows
-- **Human-in-the-Loop**: The `@claude` comment gives developers control
-- **Real-World Pattern**: This mirrors how teams use AI for routine fixes
+1. GitHub Action triggers
+2. Claude reads the codebase
+3. Claude finds typos ("Helo" → "Hello", "Welcom" → "Welcome")
+4. Claude commits the fix
+5. Claude comments on the PR
+
+---
+
+## Workflow Triggers
+
+| Trigger | When |
+|---------|------|
+| `@claude` comment | Comment on any PR |
+| `gh workflow run` | Manual CLI trigger with PR number |
+| Push to `feature/*` | Auto-runs on feature branch pushes |
+| Push to `docs/*` | Auto-runs on docs branch pushes |
+
+---
+
+## The Bug (for demo)
+
+File: `index.js` on feature branch
+
+```javascript
+function greetUser(name) {
+  return `Helo, ${name}! Welcom to our app.`; // typos
+}
+```
+
+## The Fix (what Claude does)
+
+```javascript
+function greetUser(name) {
+  return `Hello, ${name}! Welcome to our app.`; // fixed!
+}
+```
 
 ---
 
 ## Troubleshooting
 
 ### Action not running?
-
-- Make sure `ANTHROPIC_API_KEY` secret is set
-- Check that comment contains `@claude`
-- Verify Actions are enabled in repo settings
+- Check `ANTHROPIC_API_KEY` secret is set
+- For comments: make sure it contains `@claude`
+- Check Actions are enabled in repo settings
 
 ### Push rejected?
+- Make sure GitHub repo was created empty
+- Check remote: `git remote -v`
 
-- Make sure the GitHub repo is empty (no initial README)
-- Check your remote URL: `git remote -v`
+### CLI trigger not working?
+- Install GitHub CLI: `brew install gh` or `apt install gh`
+- Authenticate: `gh auth login`
 
 ---
 
-## Files in This Demo
+## Files
 
-| File                               | Description                          |
-| ---------------------------------- | ------------------------------------ |
-| `index.js`                         | Simple Node.js greeting app          |
-| `package.json`                     | Project configuration                |
-| `.github/workflows/claude-fix.yml` | GitHub Action for Claude integration |
-| `SETUP.md`                         | This file                            |
+| File | Description |
+|------|-------------|
+| `index.js` | Node.js greeting app |
+| `package.json` | Project config |
+| `.github/workflows/claude-fix.yml` | GitHub Action |
+| `SETUP.md` | This guide |
