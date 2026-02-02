@@ -4,7 +4,7 @@
  */
 
 function greetUser(name) {
-  return `Hlo, ${name}! Wecoe to our app.`;
+  return `Hello, ${name}! Welcome to our app.`;
 }
 
 function formatDate(date) {
