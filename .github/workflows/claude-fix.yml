@@ -1,13 +1,19 @@
 name: Claude Bug Fix
 
 on:
+  push:
+    branches:
+      - 'bugfix/*'
+      - 'docs/*'
   issue_comment:
     types: [created]
 
 jobs:
   fix-bug:
-    # Only run on PR comments that mention @claude
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@claude')
+    # Run on push to bugfix/*/docs/* branches OR PR comments mentioning @claude
+    if: |
+      (github.event_name == 'push') ||
+      (github.event.issue.pull_request && contains(github.event.comment.body, '@claude'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,7 +21,8 @@ jobs:
       issues: write
 
     steps:
-      - name: Get PR branch
+      - name: Get PR branch (for issue_comment)
+        if: github.event_name == 'issue_comment'
         id: pr
         uses: actions/github-script@v7
         with:
@@ -30,10 +37,17 @@ jobs:
               sha: pr.data.head.sha
             };
 
-      - name: Checkout PR branch
+      - name: Checkout PR branch (for issue_comment)
+        if: github.event_name == 'issue_comment'
         uses: actions/checkout@v4
         with:
           ref: ${{ fromJSON(steps.pr.outputs.result).ref }}
+          fetch-depth: 0
+
+      - name: Checkout branch (for push)
+        if: github.event_name == 'push'
+        uses: actions/checkout@v4
+        with:
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -55,11 +69,18 @@ jobs:
         run: |
           claude --print "Fix the bug in this codebase. Look for typos or errors and fix them. After fixing, commit the changes with a descriptive message."
 
-      - name: Push fix
+      - name: Push fix (for issue_comment)
+        if: github.event_name == 'issue_comment'
         run: |
           git push origin HEAD:${{ fromJSON(steps.pr.outputs.result).ref }}
 
+      - name: Push fix (for push)
+        if: github.event_name == 'push'
+        run: |
+          git push
+
       - name: Comment on PR
+        if: github.event_name == 'issue_comment'
         uses: actions/github-script@v7
         with:
           script: |
