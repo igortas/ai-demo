@@ -16,6 +16,19 @@ function formatDate(date) {
   });
 }
 
+// Print a message in a banner format
+function printBanner(message) {
+  const bannerWidth = message.length + 4;
+  const topBorder = '*'.repeat(bannerWidth);
+  const middleLine = `* ${message} *`;
+
+  console.log(topBorder);
+  console.log(middleLine);
+  console.log(topBorder);
+
+  return message;
+}
+
 function main() {
   const userName = process.argv[2] || 'Guest';
   const today = new Date();
@@ -26,4 +39,4 @@ function main() {
 
 main();
 
-module.exports = { greetUser, formatDate };
+module.exports = { greetUser, formatDate, printBanner };
