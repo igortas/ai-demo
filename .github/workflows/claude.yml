@@ -102,7 +102,7 @@ jobs:
           3. Commit your changes with a clear message
           4. Provide a summary of what you did"
 
-          OUTPUT=$(claude --print "$PROMPT" 2>&1) || true
+          OUTPUT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1) || true
           {
             echo "output<<EOF"
             echo "$OUTPUT"
@@ -126,7 +126,7 @@ jobs:
 
           Provide analysis and recommendations. You cannot make code changes from an issue - suggest what should be changed in a follow-up PR."
 
-          OUTPUT=$(claude --print "$PROMPT" 2>&1) || true
+          OUTPUT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1) || true
           {
             echo "output<<EOF"
             echo "$OUTPUT"

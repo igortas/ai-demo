@@ -86,7 +86,7 @@ jobs:
 
           Be constructive and specific."
 
-          OUTPUT=$(claude --print "$PROMPT" 2>&1) || true
+          OUTPUT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1) || true
 
           {
             echo "review<<REVIEW_EOF_MARKER"
