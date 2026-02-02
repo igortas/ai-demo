@@ -35,7 +35,7 @@ function printBaner(mesage) {
   console.log(middleLine);
   console.log(topBorder);
 
-  retrun mesage;
+  return mesage;
 }
 
 function main() {
