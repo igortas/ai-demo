@@ -40,6 +40,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Run Tests
+        run: npm test
+
       - name: Install Claude Code
         run: npm install -g @anthropic-ai/claude-code
 

@@ -133,6 +133,11 @@ jobs:
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
+      # PR: Run tests after Claude's changes
+      - name: Run Tests (PR)
+        if: steps.context.outputs.type == 'pr'
+        run: npm test
+
       # PR: Push changes
       - name: Push (PR)
         if: steps.context.outputs.type == 'pr'
