@@ -1,0 +1,172 @@
+name: Claude
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Determine context
+        id: context
+        run: |
+          if [ -n "${{ github.event.issue.pull_request }}" ]; then
+            echo "type=pr" >> $GITHUB_OUTPUT
+          else
+            echo "type=issue" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract request
+        id: request
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const comment = context.payload.comment.body;
+            const request = comment.replace(/@claude\s*/gi, '').trim();
+            return request || 'Please help with this';
+
+      # PR: Get details and checkout
+      - name: Get PR details
+        if: steps.context.outputs.type == 'pr'
+        id: pr_info
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            return {
+              ref: pr.data.head.ref,
+              number: context.issue.number,
+              title: pr.data.title
+            };
+
+      - name: Checkout (PR)
+        if: steps.context.outputs.type == 'pr'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ fromJSON(steps.pr_info.outputs.result).ref }}
+          fetch-depth: 0
+
+      # Issue: Checkout main (read-only)
+      - name: Checkout (Issue)
+        if: steps.context.outputs.type == 'issue'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Configure Git
+        if: steps.context.outputs.type == 'pr'
+        run: |
+          git config user.name "Claude Bot"
+          git config user.email "claude-bot@users.noreply.github.com"
+
+      # PR: Execute request and make changes
+      - name: Run Claude (PR)
+        if: steps.context.outputs.type == 'pr'
+        id: claude_pr
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          REQUEST='${{ steps.request.outputs.result }}'
+          PR_TITLE='${{ fromJSON(steps.pr_info.outputs.result).title }}'
+          PR_NUM='${{ fromJSON(steps.pr_info.outputs.result).number }}'
+
+          PROMPT="You are responding to a request on Pull Request #${PR_NUM}.
+
+          PR Title: ${PR_TITLE}
+          User Request: ${REQUEST}
+
+          Instructions:
+          1. Analyze the request carefully
+          2. Execute the request - make necessary code changes
+          3. Commit your changes with a clear message
+          4. Provide a summary of what you did"
+
+          OUTPUT=$(claude --print "$PROMPT" 2>&1) || true
+          {
+            echo "output<<EOF"
+            echo "$OUTPUT"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      # Issue: Analyze only (no changes)
+      - name: Run Claude (Issue)
+        if: steps.context.outputs.type == 'issue'
+        id: claude_issue
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          REQUEST='${{ steps.request.outputs.result }}'
+          ISSUE_TITLE='${{ github.event.issue.title }}'
+
+          PROMPT="You are responding to Issue #${{ github.event.issue.number }}.
+
+          Issue Title: ${ISSUE_TITLE}
+          User Request: ${REQUEST}
+
+          Provide analysis and recommendations. You cannot make code changes from an issue - suggest what should be changed in a follow-up PR."
+
+          OUTPUT=$(claude --print "$PROMPT" 2>&1) || true
+          {
+            echo "output<<EOF"
+            echo "$OUTPUT"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      # PR: Push changes
+      - name: Push (PR)
+        if: steps.context.outputs.type == 'pr'
+        run: |
+          git push origin HEAD:${{ fromJSON(steps.pr_info.outputs.result).ref }} || echo "Nothing to push"
+
+      # PR: Comment response
+      - name: Comment (PR)
+        if: steps.context.outputs.type == 'pr'
+        uses: actions/github-script@v7
+        env:
+          CLAUDE_OUTPUT: ${{ steps.claude_pr.outputs.output }}
+        with:
+          script: |
+            const output = process.env.CLAUDE_OUTPUT || 'Done.';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## Claude Response\n\n${output}\n\n---\n*Triggered by @claude mention*`
+            });
+
+      # Issue: Comment response
+      - name: Comment (Issue)
+        if: steps.context.outputs.type == 'issue'
+        uses: actions/github-script@v7
+        env:
+          CLAUDE_OUTPUT: ${{ steps.claude_issue.outputs.output }}
+        with:
+          script: |
+            const output = process.env.CLAUDE_OUTPUT || 'Analysis complete.';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## Claude Analysis\n\n${output}\n\n---\n*This is an issue - create a PR to implement changes.*`
+            });
