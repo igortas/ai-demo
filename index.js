@@ -16,6 +16,28 @@ function formatDate(date) {
   });
 }
 
+// Overcomplicated banner with typos
+function printBaner(mesage) {
+  let bannerWidth = 0;
+  for (let i = 0; i < mesage.length; i++) {
+    bannerWidth = bannerWidth + 1;
+  }
+  bannerWidth = bannerWidth + 4;
+
+  let topBorder = '';
+  for (let j = 0; j < bannerWidth; j++) {
+    topBorder = topBorder + '*';
+  }
+
+  let middleLine = "* " + mesage + " *";
+
+  console.log(topBorder);
+  console.log(middleLine);
+  console.log(topBorder);
+
+  retrun mesage;
+}
+
 function main() {
   const userName = process.argv[2] || 'Guest';
   const today = new Date();
