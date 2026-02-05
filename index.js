@@ -16,26 +16,16 @@ function formatDate(date) {
 	});
 }
 
-// Overcomplicated banner with typos
-function printBaner(mesage) {
-	let bannerWidth = 0;
-	for (let i = 0; i < mesage.length; i++) {
-		bannerWidth = bannerWidth + 1;
-	}
-	bannerWidth = bannerWidth + 4;
+// Simple banner function
+function printBanner(message) {
+	const border = '*'.repeat(message.length + 4);
+	const middleLine = `* ${message} *`;
 
-	let topBorder = '';
-	for (let j = 0; j < bannerWidth; j++) {
-		topBorder = topBorder + '*';
-	}
-
-	let middleLine = '* ' + mesage + ' *';
-
-	console.log(topBorder);
+	console.log(border);
 	console.log(middleLine);
-	console.log(topBorder);
+	console.log(border);
 
-	return mesage;
+	return message;
 }
 
 function main() {
@@ -46,8 +36,8 @@ function main() {
 	console.log(`Today is ${formatDate(today)}`);
 }
 
-printBaner('HELLO WORLD');
+printBanner('HELLO WORLD');
 
 main();
 
-module.exports = { greetUser, formatDate };
+module.exports = { greetUser, formatDate, printBanner };

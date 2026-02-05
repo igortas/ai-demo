@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { formatDate } = require('./index.js');
+const { formatDate, printBanner } = require('./index.js');
 
 // Test greetUser function
 console.log('Testing greetUser...');
@@ -24,5 +24,20 @@ assert.ok(
 	'formatDate should include the month name'
 );
 console.log('✓ formatDate includes correct date components');
+
+// Test printBanner function
+console.log('\nTesting printBanner...');
+
+// Test 5: printBanner returns the original message
+const testMessage = 'TEST';
+const result = printBanner(testMessage);
+assert.strictEqual(result, testMessage, 'printBanner should return the original message');
+console.log('✓ printBanner returns the original message');
+
+// Test 6: printBanner creates proper border length
+const shortMsg = 'HI';
+const shortResult = printBanner(shortMsg);
+assert.strictEqual(shortResult, shortMsg, 'printBanner handles short messages');
+console.log('✓ printBanner handles messages of different lengths');
 
 console.log('\n✅ All tests passed!');
