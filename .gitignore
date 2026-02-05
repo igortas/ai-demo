@@ -1,0 +1,5 @@
+**/node_modules
+presentation.pptx
+generate-pptx.mjs
+create-presentation.js
+slidev/

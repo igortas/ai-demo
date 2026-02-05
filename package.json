@@ -7,6 +7,13 @@
     "start": "node index.js",
     "test": "node index.test.js"
   },
-  "keywords": ["ai", "demo", "github-actions"],
-  "license": "MIT"
+  "keywords": [
+    "ai",
+    "demo",
+    "github-actions"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
 }
